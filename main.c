@@ -6,6 +6,8 @@
 #define BLUE 0X000000FF
 #define GREEN 0x0000FF00
 
+//use 'xev' command to check keycodes
+
 typedef struct s_data 
 {
 	void *img;
@@ -57,43 +59,65 @@ void ft_create_square(t_data *img, int pos_x, int pos_y, int size, int color)
 	}
 }
 
+void ft_putkeycode(int keycode)
+{
+	ft_putstr("keycode: ");
+	ft_putnbr(keycode);
+	ft_putchar('\n');
+}
+
+int ft_put_mouse_pos(int x, int y)
+{
+	ft_putstr("x: ");
+	ft_putnbr(x);
+	ft_putchar('\n');
+	ft_putstr("y: ");
+	ft_putnbr(y);
+	ft_putchar('\n');
+}
+
+int ft_keyboard_hook(int keycode, t_mlx *mlx, t_data *img)
+{
+	ft_putkeycode(keycode);
+	if (keycode == 65307)
+	{
+		mlx_destroy_window(mlx->mlx, mlx->win);
+		exit(0);
+	}
+	else if (keycode == 32)
+	{
+		ft_putstr("'Screen Cleared!'\n");
+	}
+	else if (keycode == 65362)
+	{
+		
+	}
+
+}
+
+int ft_exit(int keycode, t_mlx *mlx)
+{
+	mlx_destroy_window(mlx->mlx, mlx->win);
+	exit(0);
+}
+
 int main(void)
 {
-	void *mlx;
-	int i;
-	void *mlx_win;
+	t_mlx mlx;
 	t_data img;
 
-	i = 0;
-	mlx = mlx_init();
-	mlx_win = mlx_new_window(mlx, 1280, 720, "Hello world!");
-	img.img = mlx_new_image(mlx, 1280, 720);
+	mlx.mlx = mlx_init();
+	mlx.win = mlx_new_window(mlx.mlx, 1280, 720, "Hello world!");
+	img.img = mlx_new_image(mlx.mlx, 1280, 720);
 	img.addr = mlx_get_data_addr(img.img, &img.bits_per_pixels, &img.line_length, &img.endian);
-	
-	// while (i < 100)
-	// {
-	// 	ft_create_square(&img, 5, 5, i, RED);
-	// 	mlx_put_image_to_window(mlx, mlx_win, img.img, 0, 0);
-	// 	usleep(500000);
-	// 	i++;
-	// }
-	// i = 0;
-	while (i < 100)
-	{
-		printf("%d\n", i);
-		printf("RED\n");
-		ft_create_square(&img, 5, 5, 100, RED);
-		mlx_put_image_to_window(mlx, mlx_win, img.img, 0, 0);
-		usleep(500000);
-		printf("BLUE\n");
-		ft_create_square(&img, 5, 5, 100, GREEN);
-		mlx_put_image_to_window(mlx, mlx_win, img.img, 0, 0);
-		usleep(500000);
-		printf("GREEN\n");
-		ft_create_square(&img, 5, 5, 100, BLUE);
-		mlx_put_image_to_window(mlx, mlx_win, img.img, 0, 0);
-		usleep(500000);
-		i++;
-	}
-	mlx_loop(mlx);
+	ft_create_square(&img, 5, 5, 10, GREEN);
+	mlx_put_image_to_window(mlx.mlx, mlx.win, img.img, 0, 0);
+	//hooks for the same events have to be in the same call of mlx_hook
+	mlx_hook(mlx.win, 17, 1L<<17, ft_exit, &mlx);
+	mlx_hook(mlx.win, 2, 1L<<0, ft_keyboard_hook, &mlx, &img);
+	mlx_hook(mlx.win, 6, 1L<<6, ft_put_mouse_pos, NULL);
+	// 	ft_create_square(&img, 5, 5, a, GREEN);
+	// 	mlx_put_image_to_window(mlx.mlx, mlx.win, img.img, 0, 0);
+
+	mlx_loop(mlx.mlx);
 }
