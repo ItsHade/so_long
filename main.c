@@ -38,7 +38,7 @@ void ft_create_empty_square(t_data *img, int x, int y, int color)
 	ft_mlx_pixel_put(img, x + 3, y + 1, color);
 	ft_mlx_pixel_put(img, x + 3, y, color);
 	ft_mlx_pixel_put(img, x + 2, y, color);
-	ft_mlx_pixel_put(img, x + 1, y, color);
+	ft_mlx_pixel_put(img, x + 1, y, colorn );
 }
 
 void ft_create_square(t_data *img, int pos_x, int pos_y, int size, int color)
