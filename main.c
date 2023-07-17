@@ -95,10 +95,11 @@ int ft_keyboard_hook(int keycode, t_mlx *mlx, t_data *img)
 
 }
 
-int ft_exit(int keycode, t_mlx *mlx)
+int ft_exit(t_mlx *mlx)
 {
 	mlx_destroy_window(mlx->mlx, mlx->win);
 	exit(0);
+	return (0);
 }
 
 int main(void)
@@ -113,8 +114,9 @@ int main(void)
 	ft_create_square(&img, 5, 5, 10, GREEN);
 	mlx_put_image_to_window(mlx.mlx, mlx.win, img.img, 0, 0);
 	//hooks for the same events have to be in the same call of mlx_hook
-	mlx_hook(mlx.win, 17, 1L<<17, ft_exit, &mlx);
-	mlx_hook(mlx.win, 2, 1L<<0, ft_keyboard_hook, &mlx, &img);
+	mlx_loop_hook(mlx.mlx, NULL, NULL);
+	mlx_hook(mlx.win, 17, 0, ft_exit, &mlx);
+	mlx_hook(mlx.win, 2, 1L<<0, ft_keyboard_hook, &mlx);
 	mlx_hook(mlx.win, 6, 1L<<6, ft_put_mouse_pos, NULL);
 	// 	ft_create_square(&img, 5, 5, a, GREEN);
 	// 	mlx_put_image_to_window(mlx.mlx, mlx.win, img.img, 0, 0);
