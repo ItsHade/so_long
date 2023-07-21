@@ -15,7 +15,7 @@ typedef struct s_mlx
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
-# include "minilibx-linux/mlx.h"
+#include "minilibx-linux/mlx.h"
 
 void ft_putstr(char *s);
 
