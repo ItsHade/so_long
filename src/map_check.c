@@ -1,9 +1,16 @@
 #include "../include/so_long.h"
 
+//gpt helped need to rename
+typedef struct s_cell {
+    int row;
+    int col;
+} t_cells;
+
 int ft_check_file_format(char *file)
 {
     int i;
     int a;
+    int fd;
     // maybe better way to do it that's still ok for the moulinette
     char neededFormat[4];
 
@@ -14,11 +21,13 @@ int ft_check_file_format(char *file)
 
     i = 0;
     a = 0;
+    fd = open(file, O_RDONLY);
+    if (fd < 0)
+        return (-2);
+    close(fd);
     while (file[i] != 0)
         i++;
     i -= 4;
-    if (i <= 0)
-        return (-2);
     while (file[i] != 0)
     {
         if (file[i] != neededFormat[a])
@@ -28,7 +37,6 @@ int ft_check_file_format(char *file)
     }
     return (0);
 }
-
 
 //renvoie la longeur sans le /n
 int ft_get_line_length(char *file)
@@ -96,27 +104,27 @@ int ft_get_number_of_lines(char *file, int lineLength)
 int ft_check_for_outside_walls(char **map, int nbLines, int lineLength)
 {
     int line;
-    int raw;
+    int col;
 
-    raw = 0;
-    while (raw < lineLength)
+    col = 0;
+    while (col < lineLength)
     {
-        if (map[0][raw] != '1')
+        if (map[0][col] != '1')
         {
             ft_putstr("Probleme mur du haut\n");
             return (-1);
         }
-        raw++;
+        col++;
     }
-    raw = 0;
-    while (raw < lineLength)
+    col = 0;
+    while (col < lineLength)
     {
-        if (map[nbLines - 1][raw] != '1')
+        if (map[nbLines - 1][col] != '1')
         {
             ft_putstr("Probleme mur du bas\n");
             return (-1);
         }
-        raw++;
+        col++;
     }
     line = 0;
     while (line < nbLines)
@@ -144,46 +152,57 @@ int ft_check_for_outside_walls(char **map, int nbLines, int lineLength)
 int ft_check_map_requirement(char **map, int nbLines, int lineLength)
 {
     int line;
-    int raw;
+    int col;
     int countPlayerStart;
     int countExits;
+    int countCollectibles;
 
     line = 0;
     countExits = 0;
     countPlayerStart = 0;
+    countCollectibles = 0;
     while (line < nbLines)
     {
-        raw = 0;
-        while (raw < lineLength)
+        col = 0;
+        while (col < lineLength)
         {
-            if (map[line][raw] == 'P')
+            if (map[line][col] == 'P')
                 countPlayerStart++;
-            else if (map[line][raw] == 'E')
+            else if (map[line][col] == 'E')
                 countExits++;
-            else if (map[line][raw] != '0' && map[line][raw] != '1' && map[line][raw] != 'C')
+            else if (map[line][col] == 'C')
+                countCollectibles++;
+            else if (map[line][col] != '0' && map[line][col] != '1')
                 return (-1);
-            raw++;
+            col++;
         }
         line ++;
     }
-    if (countPlayerStart != 1 || countExits != 1)
+    if (countPlayerStart != 1 || countExits != 1 || countCollectibles < 1)
         return (-1);
+    return (0);
+}
+
+//function/functions to verify is there is a existing path from P to E passing by all the C can only go on 0 (P and C count as 0) (not specified what happens if player goes on E before collecting every C ? does the game finish or does it do nothing ?)(obviously blocked by 1)
+int ft_check_valid_path(char **map, int nbLines, int lineLength)
+{
+
     return (0);
 }
 
 void ft_putmap(char **map, int nbLines, int lineLength)
 {
     int line;
-    int raw;
+    int col;
 
     line = 0;
     while (line < nbLines)
     {
-        raw = 0;
-        while (raw < lineLength)
+        col = 0;
+        while (col < lineLength)
         {
-            ft_putchar(map[line][raw]);
-            raw++;
+            ft_putchar(map[line][col]);
+            col++;
         }
         ft_putchar('\n');
         line++;
@@ -215,7 +234,7 @@ char **ft_get_map(char *file, int nbLines, int lineLength)
     fd = open(file, O_RDONLY);
     if (fd < 0)
         exit(EXIT_FAILURE);
-    map = malloc(sizeof(char) * ((nbLines * (lineLength + 1))));
+    map = malloc(sizeof(char *) * ((nbLines)));
     if (!map)
         return (close(fd), NULL);
     while (line < nbLines)
