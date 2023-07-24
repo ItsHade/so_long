@@ -1,10 +1,11 @@
 #include "../include/so_long.h"
 
-//gpt helped need to rename
-typedef struct s_cell {
-    int row;
-    int col;
-} t_cells;
+//position x and y of the cell and front represent wich side we will check next 0 - top, 1 - right, 2 - bottom, 3 - left
+typedef struct s_pos {
+    int pos_x;
+    int pos_y;
+    int front;
+} t_cell;
 
 int ft_check_file_format(char *file)
 {
@@ -149,6 +150,7 @@ int ft_check_for_outside_walls(char **map, int nbLines, int lineLength)
     return (0);
 }
 
+//and returns the number of collectibles
 int ft_check_map_requirement(char **map, int nbLines, int lineLength)
 {
     int line;
@@ -180,13 +182,110 @@ int ft_check_map_requirement(char **map, int nbLines, int lineLength)
     }
     if (countPlayerStart != 1 || countExits != 1 || countCollectibles < 1)
         return (-1);
-    return (0);
+    return (countCollectibles);
+}
+
+t_cell ft_get_start_pos(char **map, int nbLines, int lineLength)
+{
+    int line;
+    int col;
+    t_cell pos;
+
+    line = 0;
+    pos.pos_x = -1;
+    pos.pos_y = -1;
+    //means we will got to the top first
+    pos.front = 0;
+    while (line < nbLines)
+    {
+        col = 0;
+        while (col < lineLength)
+        {
+            if (map[line][col] == 'P')
+            {
+                pos.pos_x = line;
+                pos.pos_y = col;
+                return (pos);
+            }
+            col++;
+        }
+        line++;
+    }
+    return (pos);    
+}
+
+char ft_check_next_cell(char **map, t_cell cell)
+{
+    char c;
+
+    c = 0;
+    if (cell.front == 0)
+        c = map[cell.pos_x - 1][cell.pos_y];
+    else if (cell.front == 1)
+        c = map[cell.pos_x][cell.pos_y + 1];
+    else if (cell.front == 2)
+        c = map[cell.pos_x + 1][cell.pos_y];
+    else if (cell.front == 3)
+        c = map[cell.pos_x][cell.pos_y - 1];
+    return (c);
+}
+
+// int ft_is_collectible_found(char **map, t_cell cell, int **alreadyFound)
+// {
+    
+// }
+
+t_cell ft_get_next_cell(t_cell cell)
+{
+    if (cell.front == 0)
+        cell.pos_x -= 1;
+    else if (cell.front == 1)
+        cell.pos_y += 1;
+    else if (cell.front == 2)
+        cell.pos_x += 1;
+    else if (cell.front == 3)
+        cell.pos_y -= 1;
+    return (cell);
 }
 
 //function/functions to verify is there is a existing path from P to E passing by all the C can only go on 0 (P and C count as 0) (not specified what happens if player goes on E before collecting every C ? does the game finish or does it do nothing ?)(obviously blocked by 1)
-int ft_check_valid_path(char **map, int nbLines, int lineLength)
+int ft_check_valid_path(char **map, int nbLines, int lineLength, int countCollectibles)
 {
+    // int i;
+    // int countC;
+    // int alreadyFound[countCollectibles][2];
+    (void) countCollectibles;
+    t_cell cell;
+    t_cell lastCell;
+    t_cell nextCell;
 
+    // i = 0;
+    cell = ft_get_start_pos(map, nbLines, lineLength);
+    //
+    printf("indexes of starting pos [%d][%d]\n", cell.pos_x, cell.pos_y);
+    while (map[cell.pos_x][cell.pos_y] != 'E')
+    {
+        nextCell = ft_get_next_cell(cell);
+        printf("pos [%d][%d]\n", cell.pos_x, cell.pos_y);
+        while (ft_check_next_cell(map, cell) == '1' || (lastCell.pos_x == nextCell.pos_x && lastCell.pos_y == nextCell.pos_y))
+        {
+            cell.front += 1;
+            nextCell = ft_get_next_cell(cell);
+            printf("Turning: %d\n", cell.front);
+            if (cell.front >= 4)
+                return (-1);
+            sleep(1);
+        }
+
+        if (ft_check_next_cell(map, cell) == '0' || ft_check_next_cell(map, cell) == 'C' || ft_check_next_cell(map, cell) == 'E' )
+        {
+                printf("%d\n", cell.front);
+                lastCell = cell;
+                cell = ft_get_next_cell(cell);
+                ft_putstr("Going forward!\n");
+                cell.front = 0;
+        }    
+    }
     return (0);
 }
 
@@ -256,6 +355,7 @@ int main(int argc, char **argv)
 {
     int nbLines;
     int lineLength;
+    int countCollectibles;
     char **map;
 
     if (argc < 2)
@@ -286,12 +386,18 @@ int main(int argc, char **argv)
         ft_putstr("La map n'est pas entouree de murs\n");
         return (ft_freemap(map, nbLines), 4);
     }
-    if (ft_check_map_requirement(map, nbLines, lineLength) == -1)
+    countCollectibles = ft_check_map_requirement(map, nbLines, lineLength);
+    if (countCollectibles == -1)
     {
         ft_putstr("Il y a un probleme avec la carte\n");
         return (ft_freemap(map, nbLines), 5);
     }
     ft_putstr("!!!!!!!!MAP IS GUCCI!!!!!!!!\n");
+    if (ft_check_valid_path(map, nbLines, lineLength, countCollectibles) == -1)
+    {
+        ft_putstr("Bloqueeeee!\n");
+    }
+    ft_putstr("FINISHED ??\n");
     ft_freemap(map, nbLines);
     return (0);
 }
