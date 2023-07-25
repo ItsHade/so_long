@@ -1,52 +1,23 @@
 #include "../include/so_long.h"
 
-typedef struct s_cell {
-    int pos_x;
-    int pos_y;
-    int front;
-} t_cell;
-
-t_cell ft_go_to_next_cell(t_cell cell)
-{
-    if (cell.front == 0)
-        cell.pos_x -= 1;
-    else if (cell.front == 1)
-        cell.pos_y += 1;
-    else if (cell.front == 2)
-        cell.pos_x += 1;
-    else if (cell.front == 3)
-        cell.pos_y -= 1;
-    return (cell);
-}
-
 int main(void)
 {
-    t_cell cell;
-    char tab[3][2];
-    char tab2[3][2];
+	int width = 32;
+	int height = 32;
 
-    tab[0][0] = '1';
-    tab[0][1] = '1';
-    tab[1][0] = '1';
-    tab[1][1] = '1';
-    tab[2][0] = '1';
-    tab[2][1] = '1';
+	void *mlx_ptr;
+	void *win_ptr;
+	void *img_ptr;
 
-    cell.pos_x = 2;
-    cell.pos_y = 2;
-    cell.front = 3;
-    printf("[%d][%d]\n", cell.pos_x, cell.pos_y);
-    cell = ft_go_to_next_cell(cell);
-    printf("[%d][%d]\n", cell.pos_x, cell.pos_y);
-    cell = ft_go_to_next_cell(cell);
-    printf("[%d][%d]\n", cell.pos_x, cell.pos_y);
-    cell = ft_go_to_next_cell(cell);
-    printf("[%d][%d]\n", cell.pos_x, cell.pos_y);
-    cell.front = 0;
-    cell = ft_go_to_next_cell(cell);
-    printf("[%d][%d]\n", cell.pos_x, cell.pos_y);
-    cell = ft_go_to_next_cell(cell);
-    printf("[%d][%d]\n", cell.pos_x, cell.pos_y);
-    tab2[2][1] = tab[2][1];
-    ft_putchar(tab2[2][1]); 
+	mlx_ptr = mlx_init();
+	win_ptr = mlx_new_window(mlx_ptr, 1280, 720, "Image XPM");
+	img_ptr = mlx_xpm_file_to_image(mlx_ptr, "textures/player.xpm", &width, &height);
+	if (img_ptr == NULL)
+	{
+        ft_putstr("il y a un probleme!\n");
+		return (1);
+	}
+	mlx_put_image_to_window(mlx_ptr, win_ptr, img_ptr, 0, 0);
+	mlx_loop(mlx_ptr);
+	// free(img_ptr);
 }

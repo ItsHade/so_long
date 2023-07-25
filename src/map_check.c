@@ -18,11 +18,13 @@ typedef struct s_cell
 {
     int x;
     int y;
+    int rotate;
 } t_cell;
 
 void ft_putmap(t_data data, int nbLines, int lineLength);
 
-//using printf
+
+//
 void ft_putdata(t_data data, t_cell cell, int nbLines, int lineLength)
 {
     ft_putstr("------PRINTING DATA------\n");
@@ -254,15 +256,15 @@ char ft_check_next_cell(t_data data, t_cell cell)
     char c;
 
     c = 0;
-    if (data.rotate == 0)
+    if (cell.rotate == 0)
         c = data.map[cell.x - 1][cell.y];
-    else if (data.rotate == 1)
+    else if (cell.rotate == 1)
         c = data.map[cell.x][cell.y + 1];
-    else if (data.rotate == 2)
+    else if (cell.rotate == 2)
         c = data.map[cell.x + 1][cell.y];
-    else if (data.rotate == 3)
+    else if (cell.rotate == 3)
         c = data.map[cell.x][cell.y - 1];
-    if (data.rotate > 3)
+    if (cell.rotate > 3)
     {
         ft_putstr("CHECK WARNING!\n");
     }
@@ -283,61 +285,40 @@ int ft_is_wall(char cell_content)
     return (0);
 }
 
-t_cell ft_get_next_cell(t_data data, t_cell cell)
+t_cell ft_get_next_cell(t_cell cell)
 {
-    if (data.rotate == 0)
+    if (cell.rotate == 0)
         cell.x -= 1;
-    else if (data.rotate == 1)
+    else if (cell.rotate == 1)
         cell.y += 1;
-    else if (data.rotate == 2)
+    else if (cell.rotate == 2)
         cell.x += 1;
-    else if (data.rotate == 3)
+    else if (cell.rotate == 3)
         cell.y -= 1;
     else
     {
         ft_putstr("GET WARNING!\n");
     }
+    cell.rotate = 0;
     return (cell);
 }
 
-// int ft_is_all_checked(t_data data, int nbLines, int lineLength)
-// {
-//     int line;
-//     int col;
-
-//     line = 0;
-//     while (line < nbLines)
-//     {
-//         col = 0;
-//         while (col < lineLength)
-//         {
-//             if (ft_is_wall(data.map[line][col]) || ft_is_visited(data.map[line][col]))
-//                 col++;
-//             else
-//                 return (0);
-//         }
-//         line++;
-//     }
-//     return (1);
-// }
-
 t_data ft_check_valid_path(t_data data, t_cell cell, int nbLines, int lineLength)
 {
-    while (data.rotate < 4)
+    while (cell.rotate < 4)
     {
         data.map[cell.x][cell.y] = '#';
         if (ft_is_wall(ft_check_next_cell(data, cell)) == 1 || ft_is_visited(ft_check_next_cell(data, cell)) == 1)
-            data.rotate++;
+            cell.rotate++;
         else
         {
             if (ft_check_next_cell(data, cell) == 'E')
                 data.exitFound++;
             else if (ft_check_next_cell(data, cell) == 'C')
                 data.collectibleCounter++;
-            cell = ft_get_next_cell(data, cell);
-            data.rotate = 0;
-            data = ft_check_valid_path(data, cell, nbLines, lineLength);
+            data = ft_check_valid_path(data, ft_get_next_cell(cell), nbLines, lineLength);
         }
+        //
         ft_putstr("x: ");
         ft_putnbr(cell.x);
         ft_putstr(" y: " );
@@ -345,67 +326,19 @@ t_data ft_check_valid_path(t_data data, t_cell cell, int nbLines, int lineLength
         ft_putstr(" exits: ");
         ft_putnbr(data.exitFound);
         ft_putstr(" rotate: ");
-        ft_putnbr(data.rotate);
+        ft_putnbr(cell.rotate);
         ft_putchar('\n');
         ft_putmap(data, nbLines, lineLength);
-        // usleep(50000);
     }
     if (data.rotate > 3)
     {
+        //
         ft_putstr("\033[1;31mstuck\033[1;0m\n");
-        data.rotate = 0;
+        cell.rotate = 0;
         return (data);
     }
     return (data);
 }
-
-// int ft_check_valid_path(char **map, int nbLines, int lineLength, int collectiblesCount)
-// {
-//     int countC;
-//     int foundE;
-//     t_data startingPos;
-//     t_data data;
-
-//     data = ft_get_start_pos(map, nbLines, lineLength);
-//     startingPos = data; 
-//     countC = 0;
-//     foundE = 0;
-//     while (1)
-//     {
-//         if ((ft_is_wall(ft_check_next_cell(map, data)) == 1) || (ft_is_visited(ft_check_next_cell(map, data)) == 1))
-//         {
-//             if (data.rotate < 3)
-//                 data.rotate++;
-//             else
-//             {
-//                 ft_putstr("Restarting from first position!\n");
-//                 map[cell.x][cell.y] = '#';
-//                 data = startingPos;
-//             }
-//         }
-//         else if (data.rotate < 4)
-//         {
-//             if (ft_check_next_cell(map, data) == 'E')
-//                 foundE++;
-//             else if (ft_check_next_cell(map, data) == 'C')
-//                 countC++;
-//             map[cell.x][cell.y] = '#';
-//             data = ft_get_next_cell(data);
-//         }
-//         else if (data.rotate >= 4)
-//         {
-//             ft_putstr("======================PB!\n");
-//             data.rotate = 0;
-//         }
-//         ft_putmap(map, nbLines, lineLength);
-//         ft_putchar('\n');
-//         if (ft_is_all_checked(map, nbLines, lineLength) == 1)
-//             break;
-//     }
-//     if (countC != collectiblesCount || foundE != 1)
-//         return (-1);
-//     return (0);
-// }
 
 void ft_freemap(t_data data, int nbLines)
 {
@@ -430,7 +363,6 @@ t_data ft_get_map(char *file, int nbLines, int lineLength)
     nbBytesRead = 0;
     line = 0;
     data.rotate = 0;
-    //nbLines et lineLength dans data
     fd = open(file, O_RDONLY);
     if (fd < 0)
         exit(EXIT_FAILURE);
@@ -475,9 +407,13 @@ int main(int argc, char **argv)
         return (2);
     }
     lineLength = ft_get_line_length(argv[1]);
-    printf("Lines length is: %d\n", lineLength);
+    ft_putstr("Lines length is: ");
+    ft_putnbr(lineLength);
+    ft_putchar('\n');
     nbLines = ft_get_number_of_lines(argv[1], lineLength);
-    printf("Number of lines: %d\n", nbLines);
+    ft_putstr("Number of lines: \n");
+    ft_putnbr(nbLines);
+    ft_putchar('\n');
     data = ft_get_map(argv[1], nbLines, lineLength);
     if (!data.map)
         return (3);
@@ -500,6 +436,7 @@ int main(int argc, char **argv)
     data.exitFound = 0;
     cell.x = data.cellP_x;
     cell.y = data.cellP_y;
+    cell.rotate = 0;
     data = ft_check_valid_path(data, cell, nbLines, lineLength);
     if (data.exitFound == 1 && data.collectibleCounter == data.collectibleCount)
     {
@@ -511,7 +448,7 @@ int main(int argc, char **argv)
         ft_putstr("MAP IS SOLVABLE!\033[1;0m\n");
     }
     else
-        ft_putstr("PATHING PROBLEM!\n");
+        ft_putstr("\033[1;31mPATHING PROBLEM!\033[1;0m\n");
     ft_putdata(data, cell, nbLines, lineLength);
     ft_putstr("FREEING\n");
     ft_freemap(data, nbLines);
