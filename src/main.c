@@ -177,9 +177,14 @@ int ft_keyboard_hook(int keycode, parameters *par)
 	ft_create_square(par->img, old_x, old_y, 32, BLACK);
 	// ft_create_footsteps(par->img, old_x, old_y, 32, 0X8CFF0000);
 	mlx_put_image_to_window(par->mlx->mlx, par->mlx->win, par->img->img, 0, 0);
-	mlx_put_image_to_window(par->mlx->mlx, par->mlx->win, par->footstep, old_x, old_y);
+	// mlx_put_image_to_window(par->mlx->mlx, par->mlx->win, par->footstep, old_x, old_y);
 	mlx_put_image_to_window(par->mlx->mlx, par->mlx->win, par->player, par->playerPosX, par->playerPosY);
 
+}
+
+void ft_fill_background(parameters *par)
+{
+	
 }
 
 int ft_exit(t_mlx *mlx)
@@ -196,13 +201,13 @@ int main(void)
 	parameters par;
 
 
-	par.player_filename = "./textures/player.xpm";
-	par.footstep_filename = "./textures/footstep.xpm";
-	par.texture_height = 32;
-	par.texture_width = 32;
+	par.player_filename = "./textures/daseldrawing.xpm";
+	// par.footstep_filename = "./textures/footstep.xpm";
+	par.texture_height = 64;
+	par.texture_width = 64;
 	mlx.mlx = mlx_init();
 	par.player = mlx_xpm_file_to_image(mlx.mlx, par.player_filename, &par.texture_width, &par.texture_height);
-	par.footstep = mlx_xpm_file_to_image(mlx.mlx, par.footstep_filename, &par.texture_width, &par.texture_height);
+	// par.footstep = mlx_xpm_file_to_image(mlx.mlx, par.footstep_filename, &par.texture_width, &par.texture_height);
 	mlx.win = mlx_new_window(mlx.mlx, WIDTH, HEIGHT, "DASELLLLLL JE T'AIIIMMEEEEEEEEE!");
 	img.img = mlx_new_image(mlx.mlx, WIDTH, HEIGHT);
 	img.addr = mlx_get_data_addr(img.img, &img.bits_per_pixels, &img.line_length, &img.endian);
