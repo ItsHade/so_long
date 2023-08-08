@@ -41,7 +41,10 @@ int ft_get_map(char *file, t_data *data_ptr)
     return (close(fd), 0);
 }
 
-//function has more than 25 lines
+int ft_check_map_requirement2(t_data *data_ptr)
+{}
+
+//function has more than 25 lines (34 lines)
 int ft_check_map_requirement(t_data *data_ptr)
 {
     int line;
@@ -52,6 +55,7 @@ int ft_check_map_requirement(t_data *data_ptr)
     line = 0;
     countExits = 0;
     countPlayerStart = 0;
+    //
     data_ptr->collectibleCount = 0;
     while (line < data_ptr->nbLines)
     {
@@ -79,21 +83,20 @@ int ft_check_map_requirement(t_data *data_ptr)
     return (0);
 }
 
+//maybe replace -2 -> -1
 int ft_check_file_format(char *file)
 {
     int i_file;
     int i_neededFormat;
     int fd;
-    char *neededFormat;
+    static char neededFormat[4] = ".ber";
 
     i_file = 0;
     i_neededFormat = 0;
     fd = open(file, O_RDONLY);
     if (fd < 0)
-        return (-1);
+        return (-2);
     close(fd);
-    neededFormat = malloc(sizeof(char) * 5);
-    neededFormat = ".ber";
     while (file[i_file] != 0)
         i_file++;
     i_file -= 4;

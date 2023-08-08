@@ -23,7 +23,6 @@ int ft_get_line_length(char *file, t_data *data_ptr)
     return (0);
 }
 
-//function has more than 25 lines
 int ft_get_number_of_lines(char *file, t_data *data_ptr)
 {
     char buffer[1];
@@ -37,25 +36,18 @@ int ft_get_number_of_lines(char *file, t_data *data_ptr)
     fd = open(file, O_RDONLY);
     if (fd < 0)
         return (-1);
-    if (read(fd, buffer, 1) == 0)
-        return (close(fd), 0);
-    currentLength++;
-    while (nbBytesRead != 0)
+    while (read(fd, buffer, 1) != 0)
     {
-        nbBytesRead = read(fd, buffer, 1);
         currentLength++;
-        if ((buffer[0] == '\n') || (nbBytesRead == 0))
+        if ((buffer[0] == '\n'))
         {
-            if (currentLength != data_ptr->lineLength + 1)
-            {
-                ft_putstr("La map ne respecte pas les regles!\n");
-                close(fd);
-                exit(EXIT_FAILURE);
-            }
+            if (currentLength != data_ptr->lineLength + 1)        
+                return (ft_putstr("La map ne respecte pas les regles!\n"), close(fd), -1);
             data_ptr->nbLines++;
             currentLength = 0;
         }
     }
+    data_ptr->nbLines++;
     return (close(fd), 0);
 }
 

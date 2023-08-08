@@ -52,6 +52,7 @@ t_cell ft_get_next_cell(t_cell cell)
     return (cell);
 }
 
+//not over 25 lines without the debuging lines
 int ft_check_valid_path(t_data *data_ptr, t_cell cell)
 {
     while (cell.rotate < 4)
