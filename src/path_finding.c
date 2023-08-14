@@ -143,14 +143,10 @@ int ft_check_args(int argc, char **argv, t_data *data)
     cell.rotate = 0;
     ft_check_valid_path(data, cell);
     if (data->exitFound == 1 && data->collectibleCounter == data->collectibleCount)
-    {
-        ft_putstr("\033[1;32mFound everything\n");
-        ft_putstr("MAP IS SOLVABLE!\033[1;0m\n");      
-    }
+        ft_putstr("\033[1;32mMAP IS SOLVABLE!\033[1;0m\n");
     else
         return (ft_putstr("\033[1;31mPATHING PROBLEM!\033[1;0m\n"), -1);
     ft_putdata(*data, cell);
-    ft_putstr("FREEING\n");
     ft_freemap(*data);
     return (0);
 }

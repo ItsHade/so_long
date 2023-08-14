@@ -78,4 +78,8 @@ void ft_putdata(t_data data, t_cell cell);
 
 int ft_check_args(int argc, char **argv, t_data *data);
 
+char *ft_itoa(int num);
+
+int ft_intlen(int num);
+
 #endif
