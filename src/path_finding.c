@@ -68,7 +68,7 @@ int ft_check_valid_path(t_data *data_ptr, t_cell cell)
                 data_ptr->collectibleCounter++;
             ft_check_valid_path(data_ptr, ft_get_next_cell(cell));
         }
-        //
+        /*
         ft_putstr("x: ");
         ft_putnbr(cell.x);
         ft_putstr(" y: " );
@@ -79,11 +79,10 @@ int ft_check_valid_path(t_data *data_ptr, t_cell cell)
         ft_putnbr(cell.rotate);
         ft_putchar('\n');
         ft_putmap(*data_ptr);
+        */
     }
     if (cell.rotate > 3)
     {
-        //
-        ft_putstr("\033[1;30mstuck\033[1;0m\n");
         cell.rotate = 0;
         return (-1);
     }

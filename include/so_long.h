@@ -29,11 +29,6 @@ typedef struct s_cell
     int rotate;
 } t_cell;
 
-typedef struct s_mlx 
-{
-    void *mlx;
-    void *win;
-}   t_mlx;
 
 void ft_putchar(char c);
 
