@@ -76,4 +76,6 @@ int ft_check_valid_path(t_data *data_ptr, t_cell cell);
 //
 void ft_putdata(t_data data, t_cell cell);
 
+int ft_check_args(int argc, char **argv, t_data *data);
+
 #endif

@@ -1,7 +1,8 @@
 SRCS = 	src/ft_put.c \
 		src/check_map.c \
 		src/check_map2.c \
-		src/path_finding.c
+		src/path_finding.c \
+		src/main.c
 
 OBJS = $(SRCS:.c=.o)
 

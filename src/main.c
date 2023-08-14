@@ -10,34 +10,38 @@
 #define GREEN 0X0000FF00
 #define BLACK 0X00000000
 
-#define WIDTH 1000
-#define HEIGHT 700
+#define TILE 64
 
 //use 'xev' command to check keycodes
 
-typedef struct s_data 
+typedef struct s_game_data 
 {
 	void *img;
 	char *addr;
 	int bits_per_pixels;
 	int line_length;
 	int endian;
-}	t_data;
+}	t_game_data;
 
 typedef struct {
+	//simplifier en mettant direct mlx ptr et mlx win sans utiliser la struct t_mlx
 	t_mlx *mlx;
-	t_data *img;
+	t_game_data *img;
+	t_data data;
 	int playerPosX;
 	int playerPosY;
+	int WIDTH;
+	int HEIGHT;
 	void *player;
-	char *player_filename;
-	void *footstep;
-	char *footstep_filename;
+	void *background;
+	void *wall;
+	void *exit;
+	void *collectible;
 	int texture_width;
 	int texture_height;
 } parameters;
 
-void ft_mlx_pixel_put(t_data *data, int x, int y, int color)
+void ft_mlx_pixel_put(t_game_data *data, int x, int y, int color)
 {
 	char *dst;
 
@@ -45,7 +49,23 @@ void ft_mlx_pixel_put(t_data *data, int x, int y, int color)
 	*(unsigned int*)dst = color;
 }
 
-// void ft_create_empty_square(t_data *img, int x, int y, int color)
+int ft_exit(parameters *par)
+{
+	mlx_destroy_image(par->mlx->mlx, par->img->img);
+	mlx_destroy_image(par->mlx->mlx, par->background);
+	mlx_destroy_image(par->mlx->mlx, par->player);
+	mlx_destroy_image(par->mlx->mlx, par->wall);
+	mlx_destroy_image(par->mlx->mlx, par->exit);
+	mlx_destroy_image(par->mlx->mlx, par->collectible);
+	mlx_destroy_window(par->mlx->mlx, par->mlx->win);
+	mlx_destroy_display(par->mlx->mlx);
+	free(par->mlx->mlx);
+	ft_freemap(par->data);
+	exit(0);
+	return (0);
+}
+
+// void ft_create_empty_square(t_game_data *img, int x, int y, int color)
 // {
 // 	ft_mlx_pixel_put(img, x, y, color);
 // 	ft_mlx_pixel_put(img, x, y + 1, color);
@@ -61,7 +81,7 @@ void ft_mlx_pixel_put(t_data *data, int x, int y, int color)
 // 	ft_mlx_pixel_put(img, x + 1, y, color);
 // }
 
-void ft_create_square(t_data *img, int playerPosX, int playerPosY, int size, int color)
+void ft_create_square(t_game_data *img, int playerPosX, int playerPosY, int size, int color)
 {
 	int x;
 	int y;
@@ -79,7 +99,55 @@ void ft_create_square(t_data *img, int playerPosX, int playerPosY, int size, int
 	}
 }
 
-void ft_create_footsteps(t_data *img, int pos_x, int pos_y, int size, int color)
+void ft_render_background(parameters *par)
+{
+	int line;
+	int col;
+
+	line = 0;
+	ft_putstr("RENDERING BACKGROUND\n");
+	while (line < par->data.nbLines)
+	{
+		col = 0;
+		while(col < par->data.lineLength)
+		{
+			mlx_put_image_to_window(par->mlx->mlx, par->mlx->win, par->background, col * TILE, line * TILE);
+			col++;
+		}
+		line++;
+	}
+}
+
+void ft_render_on_top(parameters *par)
+{
+	
+}
+
+void ft_render_map(parameters *par)
+{
+	int line;
+	int col;
+
+	line = 0;
+	while (line < par->data.nbLines)
+	{
+		col = 0;
+		while (col < par->data.lineLength)
+		{
+			if (par->data.map[line][col] == '1')
+				mlx_put_image_to_window(par->mlx->mlx, par->mlx->win, par->wall, col * TILE, line * TILE);
+			else if (par->data.map[line][col] == 'E')
+				mlx_put_image_to_window(par->mlx->mlx, par->mlx->win, par->exit, col * TILE, line * TILE);
+			else if (par->data.map[line][col] == 'C')
+				mlx_put_image_to_window(par->mlx->mlx, par->mlx->win, par->collectible, col * TILE, line * TILE);
+			else
+				mlx_put_image_to_window(par->mlx->mlx, par->mlx->win, par->background, col * TILE, line * TILE);
+			col++;
+		}
+		line++;
+	}
+}
+void ft_create_footsteps(t_game_data *img, int pos_x, int pos_y, int size, int color)
 {
 	int x;
 	int y;
@@ -126,6 +194,7 @@ int ft_put_mouse_pos(int x, int y)
 	ft_putstr("y: ");
 	ft_putnbr(y);
 	ft_putchar('\n');
+	return (0);
 }
 
 int ft_keyboard_hook(int keycode, parameters *par)
@@ -135,93 +204,94 @@ int ft_keyboard_hook(int keycode, parameters *par)
 
 	old_x = par->playerPosX;
 	old_y = par->playerPosY;
-	ft_putkeycode(keycode);
+	// ft_putkeycode(keycode); //uncomment to write keycode in terminal when key is pressed
 	if (keycode == 65307)
 	{
-		mlx_destroy_window(par->mlx->mlx, par->mlx->win);
-		exit(0);
+		ft_exit(par);
 	}
 	else if (keycode == 32)
 	{
-		ft_putstr("'Screen Cleared!'\n");
+		mlx_clear_window(par->mlx->mlx, par->mlx->win);
+		ft_putstr("Screen Cleared!\n");
 	}
 	else if (keycode == 65361)
 	{
 		//left
-		if (par->playerPosX - 32 > 0)
-			par->playerPosX -= 32;
+		if (par->playerPosX - 1 >= 0 && par->data.map[par->playerPosY][par->playerPosX - 1] != '1')
+			par->playerPosX--;
 	}
 	else if (keycode == 65362)
 	{
 		//up
-		if (par->playerPosY - 32 > 0)
-			par->playerPosY -= 32;
+		if (par->playerPosY - 1 >= 0 && par->data.map[par->playerPosY - 1][par->playerPosX] != '1')
+			par->playerPosY--;
 	}
 	else if (keycode == 65363)
 	{
 		//right
-		if (par->playerPosX + 32 < WIDTH)
-			par->playerPosX += 32;
+		if (par->playerPosX + 1 < par->data.lineLength && par->data.map[par->playerPosY][par->playerPosX + 1] != '1')
+			par->playerPosX++;
 		
 	}
 	else if (keycode == 65364)
 	{
 		//down
-		if (par->playerPosY + 32 < HEIGHT)
-			par->playerPosY += 32;
+		if (par->playerPosY + 1 < par->data.nbLines && par->data.map[par->playerPosY + 1][par->playerPosX] != '1')
+			par->playerPosY++;
 	}
-	//clear window doesn't work ??? --> so i just draw a black square over the old square
-	// mlx_clear_window(par->mlx->mlx, par->mlx->win);
+
 	// ft_create_square(par->img, par->playerPosX, par->playerPosY, 10, GREEN);
-	// if (old_x != par->playerPosX || old_y != par->playerPosY)
-	ft_create_square(par->img, old_x, old_y, 32, BLACK);
+	if (old_x != par->playerPosX || old_y != par->playerPosY)
+	{
+		ft_render_map(par);
+		mlx_put_image_to_window(par->mlx->mlx, par->mlx->win, par->player, par->playerPosX * TILE, par->playerPosY * TILE);
+	}
+	// ft_create_square(par->img, old_x, old_y, 32, BLACK);
 	// ft_create_footsteps(par->img, old_x, old_y, 32, 0X8CFF0000);
-	mlx_put_image_to_window(par->mlx->mlx, par->mlx->win, par->img->img, 0, 0);
-	// mlx_put_image_to_window(par->mlx->mlx, par->mlx->win, par->footstep, old_x, old_y);
-	mlx_put_image_to_window(par->mlx->mlx, par->mlx->win, par->player, par->playerPosX, par->playerPosY);
-
-}
-
-void ft_fill_background(parameters *par)
-{
-	
-}
-
-int ft_exit(t_mlx *mlx)
-{
-	mlx_destroy_window(mlx->mlx, mlx->win);
-	exit(0);
+	// ft_render_background(par); // need a way to render stuff on top of other
 	return (0);
 }
 
-int main(void)
+int main(int argc, char **argv)
 {
 	t_mlx mlx;
-	t_data img;
+	t_game_data img;
 	parameters par;
+	// int background_height = TILE;
+	// int background_width = TILE;
 
-
-	par.player_filename = "./textures/daseldrawing.xpm";
-	// par.footstep_filename = "./textures/footstep.xpm";
-	par.texture_height = 64;
-	par.texture_width = 64;
+	if (ft_check_args(argc, argv, &par.data) == -1)
+	{
+		return (0);
+	}
+	ft_get_map(argv[1], &par.data);
+	par.WIDTH = TILE * par.data.lineLength;
+	par.HEIGHT = TILE * par.data.nbLines;
+	par.texture_height = TILE;
+	par.texture_width = TILE;
 	mlx.mlx = mlx_init();
-	par.player = mlx_xpm_file_to_image(mlx.mlx, par.player_filename, &par.texture_width, &par.texture_height);
-	// par.footstep = mlx_xpm_file_to_image(mlx.mlx, par.footstep_filename, &par.texture_width, &par.texture_height);
-	mlx.win = mlx_new_window(mlx.mlx, WIDTH, HEIGHT, "DASELLLLLL JE T'AIIIMMEEEEEEEEE!");
-	img.img = mlx_new_image(mlx.mlx, WIDTH, HEIGHT);
-	img.addr = mlx_get_data_addr(img.img, &img.bits_per_pixels, &img.line_length, &img.endian);
 	par.mlx = &mlx;
+	mlx.win = mlx_new_window(mlx.mlx, par.WIDTH, par.HEIGHT, "so_long");
+	par.background = mlx_xpm_file_to_image(mlx.mlx, "./textures/background.xpm", &par.texture_width, &par.texture_height);
+	par.player = mlx_xpm_file_to_image(mlx.mlx, "./textures/player.xpm", &par.texture_width, &par.texture_height);
+	par.wall = mlx_xpm_file_to_image(mlx.mlx, "./textures/wall.xpm", &par.texture_width, &par.texture_height);
+	par.exit = mlx_xpm_file_to_image(mlx.mlx, "./textures/exit.xpm", &par.texture_width, &par.texture_height);
+	par.collectible = mlx_xpm_file_to_image(mlx.mlx, "./textures/collectible.xpm", &par.texture_width, &par.texture_height);
+	img.img = mlx_new_image(mlx.mlx, par.WIDTH, par.HEIGHT);
+	img.addr = mlx_get_data_addr(img.img, &img.bits_per_pixels, &img.line_length, &img.endian);
 	par.img = &img;
-	par.playerPosX = 500;
-	par.playerPosY = 500;
+	par.playerPosX = par.data.cellP_y;
+	par.playerPosY = par.data.cellP_x;
 	// ft_create_square(&img, par.playerPosX, par.playerPosY, 10, GREEN);
 	// mlx_put_image_to_window(mlx.mlx, mlx.win, img.img, 0, 0);
-	mlx_put_image_to_window(mlx.mlx, mlx.win, par.player, par.playerPosX, par.playerPosY);
+	// mlx_put_image_to_window(mlx.mlx, mlx.win, par.background, 64 , 64);
+	// ft_render_background(&par);
+	ft_render_map(&par);
+	mlx_put_image_to_window(mlx.mlx, mlx.win, par.player, par.playerPosX * TILE, par.playerPosY * TILE);
 	mlx_loop_hook(mlx.mlx, NULL, NULL);
-	mlx_hook(mlx.win, 17, 0, ft_exit, &mlx);
+	mlx_hook(mlx.win, 17, 0, ft_exit, &par);
 	mlx_hook(mlx.win, 2, 1L<<0, ft_keyboard_hook, &par);
-	mlx_hook(mlx.win, 6, 1L<<6, ft_put_mouse_pos, NULL);
+	// mlx_hook(mlx.win, 6, 1L<<6, ft_put_mouse_pos, NULL); // write mouse x and y in terminal 
 	mlx_loop(mlx.mlx);
-	free(mlx.mlx);
+	ft_exit(&par);
 }

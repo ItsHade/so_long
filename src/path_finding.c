@@ -90,69 +90,67 @@ int ft_check_valid_path(t_data *data_ptr, t_cell cell)
     return (0);
 }
 
-// int ft_check_args(char **argv)
-// {}
 
-int main(int argc, char **argv)
+// if this return 0 then all good
+int ft_check_args(int argc, char **argv, t_data *data)
 {
-    t_data data;
     t_cell cell;
 
     if (argc < 2)
     {
         ft_putstr("not enough arguments!\n");
-        return (0);
+        return (-1);
     }
     if (ft_check_file_format(argv[1]) == -1)
     {
         ft_putstr("Wrong format\n");
-        return (1);
+        return (-1);
     }
     else if (ft_check_file_format(argv[1]) == -2)
     {
         ft_putstr("file doesn't exist\n");
-        return (2);
+        return (-1);
     }
-    ft_get_line_length(argv[1], &data);
+    ft_get_line_length(argv[1], data);
     ft_putstr("Lines length is: ");
-    ft_putnbr(data.lineLength);
+    ft_putnbr(data->lineLength);
     ft_putchar('\n');
-    ft_get_number_of_lines(argv[1], &data);
+    ft_get_number_of_lines(argv[1], data);
     ft_putstr("Number of lines: ");
-    ft_putnbr(data.nbLines);
+    ft_putnbr(data->nbLines);
     ft_putchar('\n');
-    if (ft_get_map(argv[1], &data) == -1)
-        ft_putstr("An error has occured!\n");
-    if (!data.map)
-        return (3);
-    ft_putmap(data);
-    if (ft_check_for_side_walls(data) == -1)
+    if (ft_get_map(argv[1], data) == -1)
+        return(ft_putstr("An error has occured!\n"), -1);
+    if (!data->map)
+        return (-1);
+    ft_putmap(*data);
+    if (ft_check_for_side_walls(*data) == -1)
     {
         ft_putstr("La map n'est pas entouree de murs\n");
-        return (ft_freemap(data), 4);
+        return (ft_freemap(*data), -1);
     }
-    if (ft_check_map_requirement(&data) == -1)
+    if (ft_check_map_requirement(data) == -1)
     {
         ft_putstr("Il y a un probleme avec la carte\n");
-        return (ft_freemap(data), 5);
+        return (ft_freemap(*data), -1);
     }
     else
         ft_putstr("MAP IS GUD!!!!!!!\n");
-    data.collectibleCounter = 0;
-    data.exitFound = 0;
-    cell.x = data.cellP_x;
-    cell.y = data.cellP_y;
+    data->collectibleCounter = 0;
+    data->exitFound = 0;
+    cell.x = data->cellP_x;
+    cell.y = data->cellP_y;
     cell.rotate = 0;
-    ft_check_valid_path(&data, cell);
-    if (data.exitFound == 1 && data.collectibleCounter == data.collectibleCount)
+    ft_check_valid_path(data, cell);
+    if (data->exitFound == 1 && data->collectibleCounter == data->collectibleCount)
     {
         ft_putstr("\033[1;32mFound everything\n");
         ft_putstr("MAP IS SOLVABLE!\033[1;0m\n");      
     }
     else
-        ft_putstr("\033[1;31mPATHING PROBLEM!\033[1;0m\n");
-    ft_putdata(data, cell);
+        return (ft_putstr("\033[1;31mPATHING PROBLEM!\033[1;0m\n"), -1);
+    ft_putdata(*data, cell);
     ft_putstr("FREEING\n");
-    ft_freemap(data);
+    ft_freemap(*data);
     return (0);
 }
