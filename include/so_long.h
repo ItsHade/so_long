@@ -29,6 +29,26 @@ typedef struct s_cell
     int rotate;
 } t_cell;
 
+typedef struct {
+	//simplifier en mettant direct mlx ptr et mlx win sans utiliser la struct t_mlx
+	void *mlx;
+	void *win;
+	void *img;
+	void *player;
+	void *background;
+	void *wall;
+	void *exit;
+	void *collectible;
+	t_data data;
+	int playerPosX;
+	int playerPosY;
+	int WIDTH;
+	int HEIGHT;
+	int playerMoves;
+	int controls;
+    int texture_height;
+	int texture_width;
+} parameters;
 
 void ft_putchar(char c);
 
@@ -76,5 +96,7 @@ int ft_check_args(int argc, char **argv, t_data *data);
 char *ft_itoa(int num);
 
 int ft_intlen(int num);
+
+void ft_render_map(parameters *par);
 
 #endif

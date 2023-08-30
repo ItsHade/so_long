@@ -15,26 +15,6 @@
 
 //use 'xev' command to check keycodes
 
-
-typedef struct {
-	//simplifier en mettant direct mlx ptr et mlx win sans utiliser la struct t_mlx
-	void *mlx;
-	void *win;
-	void *img;
-	void *player;
-	void *background;
-	void *wall;
-	void *exit;
-	void *collectible;
-	t_data data;
-	int playerPosX;
-	int playerPosY;
-	int WIDTH;
-	int HEIGHT;
-	int playerMoves;
-	int controls;
-} parameters;
-
 int ft_exit(parameters *par)
 {
 	mlx_destroy_image(par->mlx, par->img);
@@ -70,16 +50,38 @@ void ft_check_player_tile(parameters *par)
 	if (par->data.map[par->playerPosY][par->playerPosX] == 'C')
 	{
 		par->data.collectibleCounter++;
-		par->data.map[par->playerPosY][par->playerPosX] = '0';
+		par->data.map[par->playerPosY][par->playerPosX] = 'V';
 	}
 	else if (par->data.map[par->playerPosY][par->playerPosX] == 'E')
 	{
+		mlx_destroy_image(par->mlx, par->player);
+		par->player = mlx_xpm_file_to_image(par->mlx, "./textures/end.xpm", &par->texture_width, &par->texture_height);
+		mlx_put_image_to_window(par->mlx, par->win, par->player, par->playerPosX * TILE, par->playerPosY * TILE);
 		if (par->data.collectibleCounter == par->data.collectibleCount)
 		{
 			ft_putstr("\033[1;32mCONGRATULATION YOU WON!\033[1;0m\n");
 			par->controls = 0;
 		}
 	}
+	else
+	{
+		mlx_destroy_image(par->mlx, par->player);
+		par->player = mlx_xpm_file_to_image(par->mlx, "./textures/player1.xpm", &par->texture_width, &par->texture_height);
+		mlx_put_image_to_window(par->mlx, par->win, par->player, par->playerPosX * TILE, par->playerPosY * TILE);
+	}
+
+}
+
+void ft_render_walls(parameters *par, int line, int col)
+{
+	mlx_destroy_image(par->mlx, par->wall);
+	if (par->data.map[line][col - 1] == '1' && par->data.map[line][col + 1] == '1')
+		par->wall = mlx_xpm_file_to_image(par->mlx, "./textures/wallside.xpm", &par->texture_width, &par->texture_height);
+	// else if (par->data.map[line - 1][col] == '1' && par->data.map[line + 1][col] == '1')
+	// 	par->wall = mlx_xpm_file_to_image(par->mlx, "./textures/wallup.xpm", &par->texture_width, &par->texture_height);
+	else
+		par->wall = mlx_xpm_file_to_image(par->mlx, "./textures/wall.xpm", &par->texture_width, &par->texture_height);
+	mlx_put_image_to_window(par->mlx, par->win, par->wall, col * TILE, line * TILE);
 }
 
 void ft_render_map(parameters *par)
@@ -94,17 +96,30 @@ void ft_render_map(parameters *par)
 		while (col < par->data.lineLength)
 		{
 			if (par->data.map[line][col] == '1')
-				mlx_put_image_to_window(par->mlx, par->win, par->wall, col * TILE, line * TILE);
+				ft_render_walls(par, line, col);
 			else if (par->data.map[line][col] == 'E')
 				mlx_put_image_to_window(par->mlx, par->win, par->exit, col * TILE, line * TILE);
 			else if (par->data.map[line][col] == 'C')
+			{
+				mlx_destroy_image(par->mlx, par->collectible);
+				par->collectible = mlx_xpm_file_to_image(par->mlx, "./textures/collectible1.xpm", &par->texture_width, &par->texture_height);
 				mlx_put_image_to_window(par->mlx, par->win, par->collectible, col * TILE, line * TILE);
+			}
+			else if (par->data.map[line][col] == 'V')
+			{
+				mlx_destroy_image(par->mlx, par->collectible);
+				par->collectible = mlx_xpm_file_to_image(par->mlx, "./textures/collectible2.xpm", &par->texture_width, &par->texture_height);
+				mlx_put_image_to_window(par->mlx, par->win, par->collectible, col * TILE, line * TILE);
+			}
 			else
 				mlx_put_image_to_window(par->mlx, par->win, par->background, col * TILE, line * TILE);
 			col++;
 		}
 		line++;
 	}
+	// mlx_destroy_image(par->mlx, par->player);
+	// par->player = mlx_xpm_file_to_image(par->mlx, "./textures/player1.xpm", &par->texture_width, &par->texture_height);
+	// mlx_put_image_to_window(par->mlx, par->win, par->player, par->playerPosX * TILE, par->playerPosY * TILE);
 }
 
 int ft_keyboard_hook(int keycode, parameters *par)
@@ -116,16 +131,18 @@ int ft_keyboard_hook(int keycode, parameters *par)
 	old_y = par->playerPosY;
 	if (keycode == 65307)
 		ft_exit(par);
-	else if (keycode == 65361)
+	else if (keycode == 65361 && par->controls == 1)
 	{
 		//left
 		if (par->playerPosX - 1 >= 0 && par->data.map[par->playerPosY][par->playerPosX - 1] != '1')
 		{
 			par->playerPosX--;
 			par->playerMoves++;
+			mlx_destroy_image(par->mlx, par->player);
+			par->player = mlx_xpm_file_to_image(par->mlx, "./textures/player1.xpm", &par->texture_width, &par->texture_height);
 		}
 	}
-	else if (keycode == 65362)
+	else if (keycode == 65362 && par->controls == 1)
 	{
 		//up
 		if (par->playerPosY - 1 >= 0 && par->data.map[par->playerPosY - 1][par->playerPosX] != '1')
@@ -134,17 +151,19 @@ int ft_keyboard_hook(int keycode, parameters *par)
 			par->playerMoves++;
 		}
 	}
-	else if (keycode == 65363)
+	else if (keycode == 65363 && par->controls == 1)
 	{
 		//right
 		if (par->playerPosX + 1 < par->data.lineLength && par->data.map[par->playerPosY][par->playerPosX + 1] != '1')
 		{
 			par->playerPosX++;
 			par->playerMoves++;
+			mlx_destroy_image(par->mlx, par->player);
+			par->player = mlx_xpm_file_to_image(par->mlx, "./textures/player2.xpm", &par->texture_width, &par->texture_height);
 		}
 		
 	}
-	else if (keycode == 65364)
+	else if (keycode == 65364 && par->controls == 1)
 	{
 		//down
 		if (par->playerPosY + 1 < par->data.nbLines && par->data.map[par->playerPosY + 1][par->playerPosX] != '1')
@@ -155,11 +174,11 @@ int ft_keyboard_hook(int keycode, parameters *par)
 	}
 	if (old_x != par->playerPosX || old_y != par->playerPosY)
 	{
-		ft_render_map(par);
-		mlx_put_image_to_window(par->mlx, par->win, par->player, par->playerPosX * TILE, par->playerPosY * TILE);
 		ft_putstr("moves: ");
 		ft_putnbr(par->playerMoves);
 		ft_putchar('\n');
+		ft_render_map(par);
+		mlx_put_image_to_window(par->mlx, par->win, par->player, par->playerPosX * TILE, par->playerPosY * TILE);
 		ft_check_player_tile(par);
 		ft_display_text(par);
 	}
@@ -169,8 +188,6 @@ int ft_keyboard_hook(int keycode, parameters *par)
 int main(int argc, char **argv)
 {
 	parameters par;
-	int texture_height;
-	int texture_width;
 
 	if (ft_check_args(argc, argv, &par.data) == -1)
 		return (0);
@@ -180,15 +197,15 @@ int main(int argc, char **argv)
 	par.data.collectibleCounter = 0;
 	par.WIDTH = TILE * par.data.lineLength;
 	par.HEIGHT = TILE * par.data.nbLines;
-	texture_height = TILE;
-	texture_width = TILE;
+	par.texture_height = TILE;
+	par.texture_width = TILE;
 	par.mlx = mlx_init();
 	par.win = mlx_new_window(par.mlx, par.WIDTH, par.HEIGHT + TILE, "so_long");
-	par.background = mlx_xpm_file_to_image(par.mlx, "./textures/background.xpm", &texture_width, &texture_height);
-	par.player = mlx_xpm_file_to_image(par.mlx, "./textures/player1.xpm", &texture_width, &texture_height);
-	par.wall = mlx_xpm_file_to_image(par.mlx, "./textures/wall.xpm", &texture_width, &texture_height);
-	par.exit = mlx_xpm_file_to_image(par.mlx, "./textures/exit.xpm", &texture_width, &texture_height);
-	par.collectible = mlx_xpm_file_to_image(par.mlx, "./textures/collectible.xpm", &texture_width, &texture_height);
+	par.background = mlx_xpm_file_to_image(par.mlx, "./textures/background.xpm", &par.texture_width, &par.texture_height);
+	par.player = mlx_xpm_file_to_image(par.mlx, "./textures/player1.xpm", &par.texture_width, &par.texture_height);
+	par.wall = mlx_xpm_file_to_image(par.mlx, "./textures/wall.xpm", &par.texture_width, &par.texture_height);
+	par.exit = mlx_xpm_file_to_image(par.mlx, "./textures/exit.xpm", &par.texture_width, &par.texture_height);
+	par.collectible = mlx_xpm_file_to_image(par.mlx, "./textures/collectible1.xpm", &par.texture_width, &par.texture_height);
 	par.img = mlx_new_image(par.mlx, par.WIDTH, TILE);
 	par.playerPosX = par.data.cellP_y;
 	par.playerPosY = par.data.cellP_x;
