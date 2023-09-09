@@ -63,9 +63,9 @@ int ft_check_valid_path(t_data *data_ptr, t_cell cell)
         else
         {
             if (ft_check_next_cell(*data_ptr, cell) == 'E')
-                data_ptr->exitFound++;
+                data_ptr->exitfound++;
             else if (ft_check_next_cell(*data_ptr, cell) == 'C')
-                data_ptr->collectibleCounter++;
+                data_ptr->collectible_counter++;
             ft_check_valid_path(data_ptr, ft_get_next_cell(cell));
         }
         /*
@@ -74,7 +74,7 @@ int ft_check_valid_path(t_data *data_ptr, t_cell cell)
         ft_putstr(" y: " );
         ft_putnbr(cell.y);
         ft_putstr(" exit: ");
-        ft_putnbr(data_ptr->exitFound);
+        ft_putnbr(data_ptr->exitfound);
         ft_putstr(" rotate: ");
         ft_putnbr(cell.rotate);
         ft_putchar('\n');
@@ -112,11 +112,11 @@ int ft_check_args(int argc, char **argv, t_data *data)
     }
     ft_get_line_length(argv[1], data);
     ft_putstr("Lines length is: ");
-    ft_putnbr(data->lineLength);
+    ft_putnbr(data->linelength);
     ft_putchar('\n');
     ft_get_number_of_lines(argv[1], data);
     ft_putstr("Number of lines: ");
-    ft_putnbr(data->nbLines);
+    ft_putnbr(data->nblines);
     ft_putchar('\n');
     if (ft_get_map(argv[1], data) == -1)
         return(ft_putstr("An error has occured!\n"), -1);
@@ -135,13 +135,13 @@ int ft_check_args(int argc, char **argv, t_data *data)
     }
     else
         ft_putstr("MAP IS GUD!!!!!!!\n");
-    data->collectibleCounter = 0;
-    data->exitFound = 0;
-    cell.x = data->cellP_x;
-    cell.y = data->cellP_y;
+    data->collectible_counter = 0;
+    data->exitfound = 0;
+    cell.x = data->cellp_x;
+    cell.y = data->cellp_y;
     cell.rotate = 0;
     ft_check_valid_path(data, cell);
-    if (data->exitFound == 1 && data->collectibleCounter == data->collectibleCount)
+    if (data->exitfound == 1 && data->collectible_counter == data->collectible_count)
         ft_putstr("\033[1;32mMAP IS SOLVABLE!\033[1;0m\n");
     else
         return (ft_putstr("\033[1;31mPATHING PROBLEM!\033[1;0m\n"), -1);

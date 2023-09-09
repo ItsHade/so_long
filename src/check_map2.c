@@ -7,7 +7,7 @@ int ft_get_line_length(char *file, t_data *data_ptr)
     int fd;
 
     buffer[0] = 0;
-    data_ptr->lineLength = 0;
+    data_ptr->linelength = 0;
     nbBytesRead = 1;
     fd = open(file, O_RDONLY);
     if (fd < 0)
@@ -17,7 +17,7 @@ int ft_get_line_length(char *file, t_data *data_ptr)
         nbBytesRead = read(fd, buffer, 1);
         if (buffer[0] == '\n' || nbBytesRead == 0)
             break;
-        data_ptr->lineLength++;
+        data_ptr->linelength++;
     }
     close(fd);
     return (0);
@@ -30,7 +30,7 @@ int ft_get_number_of_lines(char *file, t_data *data_ptr)
     int fd;
     int currentLength;
 
-    data_ptr->nbLines = 0;
+    data_ptr->nblines = 0;
     nbBytesRead = 1;
     currentLength = 0;
     fd = open(file, O_RDONLY);
@@ -41,13 +41,13 @@ int ft_get_number_of_lines(char *file, t_data *data_ptr)
         currentLength++;
         if ((buffer[0] == '\n'))
         {
-            if (currentLength != data_ptr->lineLength + 1)        
+            if (currentLength != data_ptr->linelength + 1)        
                 return (ft_putstr("La map ne respecte pas les regles!\n"), close(fd), -1);
-            data_ptr->nbLines++;
+            data_ptr->nblines++;
             currentLength = 0;
         }
     }
-    data_ptr->nbLines++;
+    data_ptr->nblines++;
     return (close(fd), 0);
 }
 
@@ -56,16 +56,16 @@ int ft_check_for_side_walls(t_data data)
     int col;
 
     col = 0;
-    while (col < data.lineLength)
+    while (col < data.linelength)
     {
         if (data.map[0][col] != '1')
             return (ft_putstr("Probleme mur du haut\n"), -1);
         col++;
     }
     col = 0;
-    while (col < data.lineLength)
+    while (col < data.linelength)
     {
-        if (data.map[data.nbLines - 1][col] != '1')
+        if (data.map[data.nblines - 1][col] != '1')
             return (ft_putstr("Probleme mur du bas\n"), -1);
         col++;
     }
@@ -79,16 +79,16 @@ int ft_check_for_opposite_walls(t_data data)
     int line;
 
     line = 0;
-    while (line < data.nbLines)
+    while (line < data.nblines)
     {
         if (data.map[line][0] != '1')
             return (ft_putstr("Probleme mur du gauche\n"), -1);
         line++;
     }
     line = 0;
-    while (line < data.nbLines)
+    while (line < data.nblines)
     {
-        if (data.map[line][data.lineLength - 1] != '1')
+        if (data.map[line][data.linelength - 1] != '1')
             return (ft_putstr("Probleme mur de droite\n"), -1);
         line++;
     }
