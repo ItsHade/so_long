@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   path_finding.c                                     :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: maburnet <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/09/17 14:58:19 by maburnet          #+#    #+#             */
+/*   Updated: 2023/09/17 19:44:38 by maburnet         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../include/so_long.h"
 
 char ft_check_next_cell(t_data data, t_cell cell)
@@ -29,7 +41,7 @@ int ft_is_visited(char cell_content)
 
 int ft_is_wall(char cell_content)
 {
-    if (cell_content == '1')
+    if (cell_content == '1' || cell_content == 'M')
         return (1);
     return (0);
 }
@@ -68,18 +80,6 @@ int ft_check_valid_path(t_data *data_ptr, t_cell cell)
                 data_ptr->collectible_counter++;
             ft_check_valid_path(data_ptr, ft_get_next_cell(cell));
         }
-        /*
-        ft_putstr("x: ");
-        ft_putnbr(cell.x);
-        ft_putstr(" y: " );
-        ft_putnbr(cell.y);
-        ft_putstr(" exit: ");
-        ft_putnbr(data_ptr->exitfound);
-        ft_putstr(" rotate: ");
-        ft_putnbr(cell.rotate);
-        ft_putchar('\n');
-        ft_putmap(*data_ptr);
-        */
     }
     if (cell.rotate > 3)
     {
@@ -135,6 +135,7 @@ int ft_check_args(int argc, char **argv, t_data *data)
     }
     else
         ft_putstr("MAP IS GUD!!!!!!!\n");
+	// ft_get_starting_pos(*data);
     data->collectible_counter = 0;
     data->exitfound = 0;
     cell.x = data->cellp_x;

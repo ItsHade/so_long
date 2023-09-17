@@ -6,7 +6,7 @@
 /*   By: maburnet <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/06 17:08:58 by maburnet          #+#    #+#             */
-/*   Updated: 2023/09/06 18:31:29 by maburnet         ###   ########.fr       */
+/*   Updated: 2023/09/17 20:01:48 by maburnet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,25 +40,36 @@ typedef struct s_cell
 	int	rotate;
 }	t_cell;
 
+typedef struct s_textures
+{
+	void	*player;
+	void	*player1;
+	void	*floor;
+	void	*wall;
+	void	*wallside;
+	void	*exit;
+	void	*end;
+	void	*col;
+	void	*col1;
+	void	*col2;
+	void	*monster;
+	void	*img;
+}	t_textures;
+
 typedef struct s_parameters
 {
-	void	*mlx;
-	void	*win;
-	void	*img;
-	void	*player;
-	void	*background;
-	void	*wall;
-	void	*exit;
-	void	*collectible;
-	t_data	data;
-	int		playerposx;
-	int		playerposy;
-	int		width;
-	int		height;
-	int		playermoves;
-	int		controls;
-	int		texture_height;
-	int		texture_width;
+	t_textures	txt;
+	t_data		data;
+	void		*mlx;
+	void		*win;
+	int			playerposx;
+	int			playerposy;
+	int			width;
+	int			height;
+	int			playermoves;
+	int			controls;
+	int			texture_height;
+	int			texture_width;
 }	t_parameters;
 
 void	ft_putchar(char c);

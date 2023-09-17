@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: maburnet <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/09/09 19:50:10 by maburnet          #+#    #+#             */
-/*   Updated: 2023/09/09 19:50:15 by maburnet         ###   ########.fr       */
+/*   Created: 2023/09/17 14:58:24 by maburnet          #+#    #+#             */
+/*   Updated: 2023/09/17 14:58:24 by maburnet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,16 +23,20 @@
 
 #define TILE 64
 
-//use 'xev' command to check keycodes
-
 int	ft_exit(t_parameters *par)
 {
-	mlx_destroy_image(par->mlx, par->img);
-	mlx_destroy_image(par->mlx, par->background);
-	mlx_destroy_image(par->mlx, par->player);
-	mlx_destroy_image(par->mlx, par->wall);
-	mlx_destroy_image(par->mlx, par->exit);
-	mlx_destroy_image(par->mlx, par->collectible);
+	mlx_destroy_image(par->mlx, par->txt.floor);
+	mlx_destroy_image(par->mlx, par->txt.player);
+	mlx_destroy_image(par->mlx, par->txt.player1);
+	mlx_destroy_image(par->mlx, par->txt.wall);
+	mlx_destroy_image(par->mlx, par->txt.wallside);
+	mlx_destroy_image(par->mlx, par->txt.exit);
+	mlx_destroy_image(par->mlx, par->txt.end);
+	mlx_destroy_image(par->mlx, par->txt.col);
+	mlx_destroy_image(par->mlx, par->txt.col1);
+	mlx_destroy_image(par->mlx, par->txt.col2);
+	mlx_destroy_image(par->mlx, par->txt.monster)
+	mlx_destroy_image(par->mlx, par->txt.img);
 	mlx_destroy_window(par->mlx, par->win);
 	mlx_destroy_display(par->mlx);
 	free(par->mlx);
@@ -45,7 +49,7 @@ void	ft_display_text(t_parameters *par)
 {
 	char	*str;
 
-	mlx_put_image_to_window(par->mlx, par->win, par->img, 0, par->height);
+	mlx_put_image_to_window(par->mlx, par->win, par->txt.img, 0, par->height);
 	mlx_string_put(par->mlx, par->win, 20, par->height + 32, WHITE, "moves: ");
 	str = ft_itoa(par->playermoves);
 	mlx_string_put(par->mlx, par->win, 60, par->height + 32, WHITE, str);
@@ -59,17 +63,19 @@ void	ft_display_text(t_parameters *par)
 
 void	ft_check_player_tile(t_parameters *par)
 {
-	if (par->data.map[par->playerposy][par->playerposx] == 'C')
+	if (par->data.map[par->playerposy][par->playerposx] == 'M')
+	{
+		ft_putstr("\033[1;32mYOU LOSE!\033[1;0m\n");
+		par->controls = 0;
+	}
+	else if (par->data.map[par->playerposy][par->playerposx] == 'C')
 	{
 		par->data.collectible_counter++;
 		par->data.map[par->playerposy][par->playerposx] = 'V';
 	}
 	else if (par->data.map[par->playerposy][par->playerposx] == 'E')
 	{
-		mlx_destroy_image(par->mlx, par->player);
-		par->player = mlx_xpm_file_to_image(par->mlx, "./textures/end.xpm",
-				&par->texture_width, &par->texture_height);
-		mlx_put_image_to_window(par->mlx, par->win, par->player,
+		mlx_put_image_to_window(par->mlx, par->win, par->txt.end,
 			par->playerposx * TILE, par->playerposy * TILE);
 		if (par->data.collectible_counter == par->data.collectible_count)
 		{
@@ -77,24 +83,23 @@ void	ft_check_player_tile(t_parameters *par)
 			par->controls = 0;
 		}
 	}
-	else
-	{
-		mlx_destroy_image(par->mlx, par->player);
-		par->player = mlx_xpm_file_to_image(par->mlx, "./textures/player1.xpm",
-				&par->texture_width, &par->texture_height);
-		mlx_put_image_to_window(par->mlx, par->win, par->player,
-			par->playerposx * TILE, par->playerposy * TILE);
-	}
+	// else
+	// {
+	// 	mlx_put_image_to_window(par->mlx, par->win, par->txt.player,
+	// 		par->playerposx * TILE, par->playerposy * TILE);
+	// }
 }
 
 void	ft_render_walls(t_parameters *par, int line, int col)
 {
-	mlx_destroy_image(par->mlx, par->wall);
-	if (par->data.map[line][col - 1] == '1' && par->data.map[line][col + 1] == '1')
-		par->wall = mlx_xpm_file_to_image(par->mlx, "./textures/wallside.xpm", &par->texture_width, &par->texture_height);
+	if (par->data.map[line][col - 1] == '1'
+		&& par->data.map[line][col + 1] == '1')
+		mlx_put_image_to_window(par->mlx, par->win, par->txt.wallside,
+			col * TILE, line * TILE);
 	else
-		par->wall = mlx_xpm_file_to_image(par->mlx, "./textures/wall.xpm", &par->texture_width, &par->texture_height);
-	mlx_put_image_to_window(par->mlx, par->win, par->wall, col * TILE, line * TILE);
+		mlx_put_image_to_window(par->mlx, par->win, par->txt.wall,
+			col * TILE, line * TILE);
+
 }
 
 void	ft_render_map(t_parameters *par)
@@ -109,23 +114,30 @@ void	ft_render_map(t_parameters *par)
 		while (col < par->data.linelength)
 		{
 			if (par->data.map[line][col] == '1')
-				ft_render_walls(par, line, col);
+			{
+				mlx_put_image_to_window(par->mlx, par->win, par->txt.wall, col * TILE, line * TILE);
+				// ft_render_walls(par, line, col);
+			}
 			else if (par->data.map[line][col] == 'E')
-				mlx_put_image_to_window(par->mlx, par->win, par->exit, col * TILE, line * TILE);
+			{
+				mlx_put_image_to_window(par->mlx, par->win, par->txt.exit, col * TILE, line * TILE);
+			}
 			else if (par->data.map[line][col] == 'C')
 			{
-				mlx_destroy_image(par->mlx, par->collectible);
-				par->collectible = mlx_xpm_file_to_image(par->mlx, "./textures/collectible1.xpm", &par->texture_width, &par->texture_height);
-				mlx_put_image_to_window(par->mlx, par->win, par->collectible, col * TILE, line * TILE);
+				mlx_put_image_to_window(par->mlx, par->win, par->txt.col1, col * TILE, line * TILE);
 			}
 			else if (par->data.map[line][col] == 'V')
 			{
-				mlx_destroy_image(par->mlx, par->collectible);
-				par->collectible = mlx_xpm_file_to_image(par->mlx, "./textures/collectible2.xpm", &par->texture_width, &par->texture_height);
-				mlx_put_image_to_window(par->mlx, par->win, par->collectible, col * TILE, line * TILE);
+				mlx_put_image_to_window(par->mlx, par->win, par->txt.col2, col * TILE, line * TILE);
+			}
+			else if (par->data.map[line][col] == 'M')
+			{
+				mlx_put_image_to_window(par->mlx, par->win, par->txt.monster, col * TILE, line * TILE);
 			}
 			else
-				mlx_put_image_to_window(par->mlx, par->win, par->background, col * TILE, line * TILE);
+			{
+				mlx_put_image_to_window(par->mlx, par->win, par->txt.floor, col * TILE, line * TILE);
+			}
 			col++;
 		}
 		line++;
@@ -136,43 +148,47 @@ int	ft_keyboard_hook(int keycode, t_parameters *par)
 {
 	int	old_x;
 	int	old_y;
+	int	direction;
 
 	old_x = par->playerposx;
 	old_y = par->playerposy;
+	direction = 0;
 	if (keycode == 65307)
 		ft_exit(par);
 	else if (keycode == 65361 && par->controls == 1)
 	{
+		direction = 0;
 		if (par->playerposx - 1 >= 0 && par->data.map[par->playerposy][par->playerposx - 1] != '1')
 		{
 			par->playerposx--;
 			par->playermoves++;
-			mlx_destroy_image(par->mlx, par->player);
-			par->player = mlx_xpm_file_to_image(par->mlx, "./textures/player1.xpm", &par->texture_width, &par->texture_height);
 		}
 	}
 	else if (keycode == 65362 && par->controls == 1)
 	{
+		direction = 0;
 		if (par->playerposy - 1 >= 0 && par->data.map[par->playerposy - 1][par->playerposx] != '1')
 		{
 			par->playerposy--;
 			par->playermoves++;
 		}
+
 	}
 	else if (keycode == 65363 && par->controls == 1)
 	{
+		direction = 1;
 		if (par->playerposx + 1 < par->data.linelength && par->data.map[par->playerposy][par->playerposx + 1] != '1')
 		{
 			par->playerposx++;
 			par->playermoves++;
-			mlx_destroy_image(par->mlx, par->player);
-			par->player = mlx_xpm_file_to_image(par->mlx, "./textures/player2.xpm", &par->texture_width, &par->texture_height);
 		}
-		
+
 	}
 	else if (keycode == 65364 && par->controls == 1)
 	{
-		if (par->playerposy + 1 < par->data.nblines && par->data.map[par->playerposy + 1][par->playerposx] != '1')
+		direction = 1;
+		if (par->playerposy + 1 < par->data.nblines &&
+			par->data.map[par->playerposy + 1][par->playerposx] != '1')
 		{
 			par->playerposy++;
 			par->playermoves++;
@@ -184,11 +200,43 @@ int	ft_keyboard_hook(int keycode, t_parameters *par)
 		ft_putnbr(par->playermoves);
 		ft_putchar('\n');
 		ft_render_map(par);
-		mlx_put_image_to_window(par->mlx, par->win, par->player, par->playerposx * TILE, par->playerposy * TILE);
+		if (direction == 0)
+			mlx_put_image_to_window(par->mlx, par->win, par->txt.player,
+				par->playerposx * TILE, par->playerposy * TILE);
+		else
+			mlx_put_image_to_window(par->mlx, par->win, par->txt.player1,
+				par->playerposx * TILE, par->playerposy * TILE);
 		ft_check_player_tile(par);
 		ft_display_text(par);
 	}
 	return (0);
+}
+
+void	ft_initialize_textures(t_parameters *par)
+{
+	par->txt.floor = mlx_xpm_file_to_image(par->mlx, "./textures/floor.xpm",
+			&par->texture_width, &par->texture_height);
+	par->txt.player = mlx_xpm_file_to_image(par->mlx, "./textures/player1.xpm",
+			&par->texture_width, &par->texture_height);
+	par->txt.player1 = mlx_xpm_file_to_image(par->mlx, "./textures/player2.xpm",
+			&par->texture_width, &par->texture_height);
+	par->txt.wall = mlx_xpm_file_to_image(par->mlx, "./textures/wall.xpm",
+			&par->texture_width, &par->texture_height);
+	par->txt.wallside = mlx_xpm_file_to_image(par->mlx, "./textures/wallside.xpm",
+			&par->texture_width, &par->texture_height);
+	par->txt.exit = mlx_xpm_file_to_image(par->mlx, "./textures/exit.xpm",
+			&par->texture_width, &par->texture_height);
+	par->txt.end = mlx_xpm_file_to_image(par->mlx, "./textures/end.xpm",
+			&par->texture_width, &par->texture_height);
+	par->txt.col = mlx_xpm_file_to_image(par->mlx, "./textures/col.xpm",
+			&par->texture_width, &par->texture_height);
+	par->txt.col1 = mlx_xpm_file_to_image(par->mlx, "./textures/col1.xpm",
+			&par->texture_width, &par->texture_height);
+	par->txt.col2 = mlx_xpm_file_to_image(par->mlx, "./textures/col2.xpm",
+			&par->texture_width, &par->texture_height);
+	par->txt.monster = mlx_xpm_file_to_image(par->mlx, "./textures/monster.xpm",
+			&par->texture_width, &par->texture_height);
+	par->txt.img = mlx_new_image(par->mlx, par->width, TILE);
 }
 
 int	main(int argc, char **argv)
@@ -207,17 +255,13 @@ int	main(int argc, char **argv)
 	par.texture_width = TILE;
 	par.mlx = mlx_init();
 	par.win = mlx_new_window(par.mlx, par.width, par.height + TILE, "so_long");
-	par.background = mlx_xpm_file_to_image(par.mlx, "./textures/background.xpm", &par.texture_width, &par.texture_height);
-	par.player = mlx_xpm_file_to_image(par.mlx, "./textures/player1.xpm", &par.texture_width, &par.texture_height);
-	par.wall = mlx_xpm_file_to_image(par.mlx, "./textures/wall.xpm", &par.texture_width, &par.texture_height);
-	par.exit = mlx_xpm_file_to_image(par.mlx, "./textures/exit.xpm", &par.texture_width, &par.texture_height);
-	par.collectible = mlx_xpm_file_to_image(par.mlx, "./textures/collectible1.xpm", &par.texture_width, &par.texture_height);
-	par.img = mlx_new_image(par.mlx, par.width, TILE);
 	par.playerposx = par.data.cellp_y;
 	par.playerposy = par.data.cellp_x;
+	ft_initialize_textures(&par);
 	ft_render_map(&par);
 	ft_display_text(&par);
-	mlx_put_image_to_window(par.mlx, par.win, par.player, par.playerposx * TILE, par.playerposy * TILE);
+	mlx_put_image_to_window(par.mlx, par.win, par.txt.player, par.playerposx * TILE,
+		par.playerposy * TILE);
 	mlx_loop_hook(par.mlx, NULL, NULL);
 	mlx_hook(par.win, 17, 0, ft_exit, &par);
 	mlx_hook(par.win, 2, 1L<<0, ft_keyboard_hook, &par);
