@@ -6,7 +6,7 @@
 /*   By: maburnet <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/09 20:11:45 by maburnet          #+#    #+#             */
-/*   Updated: 2023/09/17 19:43:00 by maburnet         ###   ########.fr       */
+/*   Updated: 2023/09/18 16:26:26 by maburnet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ int	ft_get_map(char *file, t_data *data_ptr)
 	line = 0;
 	fd = open(file, O_RDONLY);
 	if (fd < 0)
-		exit(EXIT_FAILURE);
+		return (-1);
 	data_ptr->map = malloc(sizeof(char *) * ((data_ptr->nblines)));
 	if (!data_ptr->map)
 		return (close(fd), -1);
@@ -46,7 +46,7 @@ int	ft_get_map(char *file, t_data *data_ptr)
 			return (close(fd), -1);
 		nbbytesread = read(fd, data_ptr->map[line], data_ptr->linelength + 1);
 		if (nbbytesread == -1)
-			exit(EXIT_FAILURE);
+			return (-1);
 		data_ptr->map[line][data_ptr->linelength] = 0;
 		line++;
 	}
@@ -64,11 +64,7 @@ int	ft_check_map_requirement2(t_data *data_ptr, int line,
 		while (col < data_ptr->linelength)
 		{
 			if (data_ptr->map[line][col] == 'P')
-			{
-				data_ptr->cellp_x = line;
-				data_ptr->cellp_y = col;
 				count_player_start++;
-			}
 			else if (data_ptr->map[line][col] == 'E')
 				count_exits++;
 			else if (data_ptr->map[line][col] == 'C')
@@ -84,7 +80,7 @@ int	ft_check_map_requirement2(t_data *data_ptr, int line,
 	if (count_player_start != 1 || count_exits != 1
 		|| data_ptr->collectible_count < 1)
 		return (-1);
-	return (0);
+	return (ft_get_starting_pos(data_ptr), 0);
 }
 
 int	ft_check_map_requirement(t_data *data_ptr)
@@ -114,7 +110,7 @@ int	ft_check_file_format(char *file)
 	i_format = 0;
 	fd = open(file, O_RDONLY);
 	if (fd < 0)
-		return (-1);
+		return (-2);
 	close(fd);
 	while (file[i_file] != 0)
 		i_file++;

@@ -6,7 +6,7 @@
 /*   By: maburnet <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 14:58:10 by maburnet          #+#    #+#             */
-/*   Updated: 2023/09/17 20:00:01 by maburnet         ###   ########.fr       */
+/*   Updated: 2023/09/18 16:27:02 by maburnet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,18 +32,16 @@ int	ft_get_line_length(char *file, t_data *data_ptr)
 		data_ptr->linelength++;
 	}
 	close(fd);
-	return (0);
+	return (data_ptr->linelength);
 }
 
 int	ft_get_number_of_lines(char *file, t_data *data_ptr)
 {
 	char	buffer[1];
-	int		bytes;
 	int		fd;
 	int		length;
 
 	data_ptr->nblines = 1;
-	bytes = 1;
 	length = 0;
 	fd = open(file, O_RDONLY);
 	if (fd < 0)
@@ -62,7 +60,7 @@ int	ft_get_number_of_lines(char *file, t_data *data_ptr)
 	}
 	if (buffer[0] == '\n')
 		data_ptr->nblines--;
-	return (close(fd), 0);
+	return (close(fd), data_ptr->nblines);
 }
 
 int	ft_check_for_side_walls(t_data data)
@@ -107,4 +105,26 @@ int	ft_check_for_opposite_walls(t_data data)
 		line++;
 	}
 	return (0);
+}
+
+void	ft_get_starting_pos(t_data *data)
+{
+	int	line;
+	int	col;
+
+	line = 0;
+	while (line < data->nblines)
+	{
+		col = 0;
+		while (col < data->linelength)
+		{
+			if (data->map[line][col] == 'P')
+			{
+				data->cellp_x = line;
+				data->cellp_y = col;
+			}
+			col++;
+		}
+		line++;
+	}
 }
